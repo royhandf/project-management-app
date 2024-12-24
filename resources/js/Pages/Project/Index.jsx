@@ -6,7 +6,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import TableHeading from "@/Components/TableHeading";
 
-export default function Index({ auth, projects, queryParams = null }) {
+export default function Index({ auth, projects, queryParams = null, success }) {
   queryParams = queryParams || {};
 
   const searchFieldChange = (name, value) => {
@@ -36,22 +36,40 @@ export default function Index({ auth, projects, queryParams = null }) {
     router.get(route("project.index", queryParams));
   };
 
+  const deleteProject = (project) => {
+    if (!window.confirm("Are you sure you want to delete this project?")) {
+      return;
+    }
+
+    router.delete(route("project.destroy", project.id));
+  };
   return (
     <AuthenticatedLayout
       user={auth.user}
       header={
-        <h2
-          className="font-semibold text-xl text-gray-800 dark:text-gray-200
-          leading-tight"
-        >
-          Projects
-        </h2>
+        <div className="flex justify-between items-center">
+          <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            Projects
+          </h2>
+
+          <Link
+            href={route("project.create")}
+            className="bg-emerald-500 py-1 px-3 text-white rounded shadow transition-all hover:bg-emerald-600"
+          >
+            Add new
+          </Link>
+        </div>
       }
     >
       <Head title="Projects" />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+          {success && (
+            <div className="bg-emerald-500 py-2 px-4 mb-4 text-white rounded">
+              {success}
+            </div>
+          )}
           <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
             <div className="p-6 text-gray-900 dark:text-gray-100">
               <div className="overflow-auto">
@@ -183,19 +201,19 @@ export default function Index({ auth, projects, queryParams = null }) {
                             ? project.createdBy.name
                             : "Unknown"}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 text-nowrap">
                           <Link
                             href={route("project.edit", project.id)}
                             className="font-medium text-blue-600 dark:text-blue-500 hover:underline mx-1"
                           >
                             Edit
                           </Link>
-                          <Link
-                            href={route("project.destroy", project.id)}
+                          <button
+                            onClick={(e) => deleteProject(project)}
                             className="font-medium text-red-600 dark:text-red-500 hover:underline mx-1"
                           >
                             Delete
-                          </Link>
+                          </button>
                         </td>
                       </tr>
                     ))}
